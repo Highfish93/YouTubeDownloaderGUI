@@ -1,0 +1,20 @@
+﻿<Window x:Class="YouTubeDownloaderGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:YouTubeDownloaderGUI"
+        mc:Ignorable="d"
+        Title="YouTubeDownloader by Highfish" Height="450" Width="635" ResizeMode="NoResize">
+    <Grid>
+        <TextBox Name="tb_Link" HorizontalAlignment="Left" Margin="15,11,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="550"/>
+        <TextBlock Name="tb_Author" HorizontalAlignment="Left" Margin="15,48,0,0" TextWrapping="Wrap" Text="Author:" VerticalAlignment="Top"/>
+        <TextBlock Name="tb_Title" HorizontalAlignment="Left" Margin="15,89,0,0" TextWrapping="Wrap" Text="Title:" VerticalAlignment="Top"/>
+        <TextBlock Name="tb_Duration" HorizontalAlignment="Left" Margin="15,123,0,0" TextWrapping="Wrap" Text="Duration:" VerticalAlignment="Top"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="15,259,0,0" VerticalAlignment="Top" Click="Button_Click" Height="25" Width="85"/>
+        <ProgressBar Name="downloadProgress" HorizontalAlignment="Center" Height="20" Margin="0,294,0,0" VerticalAlignment="Top" Width="600"/>
+        <TextBlock x:Name="TbProgress" Margin="15,294,17,0" TextWrapping="Wrap" Text="0%" VerticalAlignment="Top" Height="20" FontWeight="Bold" TextAlignment="Center"/>
+        <TextBlock x:Name="tb_FileSize" HorizontalAlignment="Left" Margin="15,154,0,0" TextWrapping="Wrap" Text="Filesize:" VerticalAlignment="Top"/>
+        <Button Content="PlaylistTest" HorizontalAlignment="Left" Margin="245,264,0,0" VerticalAlignment="Top" Width="85" Click="Button_Click_1"/>
+    </Grid>
+</Window>
