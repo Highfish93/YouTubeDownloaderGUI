@@ -3,6 +3,7 @@ using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -140,8 +141,44 @@ namespace YouTubeDownloaderGUI
                 string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
                 var video = await youtube.Videos.GetAsync(url);
                 var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Url);
-                var audioStreamInfo = streamManifest.GetAudioStreams().GetWithHighestBitrate();
-                var videoStreamInfo = streamManifest.GetVideoStreams().First();
+                var audioStreamInfo = streamManifest.GetAudioStreams().First();
+
+                var videoStreamInfo = streamManifest.GetVideoStreams();
+                List<IVideoStreamInfo> videolist = new List<IVideoStreamInfo>();
+                foreach(var vsi in videoStreamInfo)
+                {
+                    if (vsi.Container == Container.WebM && !videolist.Contains(vsi))
+                        videolist.Add(vsi);
+                }
+                cb_VideoQualtity.ItemsSource = videolist.Distinct().ToList();
+                while(cb_VideoQualtity.SelectedIndex == -1)
+                {
+                    await Task.Delay(10);
+                }
+                var selectedStream = (IStreamInfo)cb_VideoQualtity.SelectedItem;
+                var streamInfos = new IStreamInfo[] { audioStreamInfo, selectedStream };
+                var fileSizeVideo = streamInfos[1].Size.Bytes;
+                var fileSizeAudio = streamInfos[0].Size.Bytes;
+                tb_FileSize.Text = "Filesize: " + ConvertBytes(fileSizeVideo + fileSizeAudio);
+                outputPath += @$"{video.Author}\";
+                Directory.CreateDirectory(outputPath);
+                var progress = new Progress<double>(p =>
+                {
+                    var newP = Math.Round((decimal)p * 100, 2);
+                    downloadProgress.Value = Convert.ToDouble(newP);
+                    TbProgress.Text = newP.ToString() + "%";
+                });
+                string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
+                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
+                //var newVideoInfoList = streamManifest.GetVideoStreams().;
+                //foreach (var info in newVideoInfoList)
+                //{
+                //MessageBox.Show(info.ToString());
+                //}
+                var tmp = streamManifest.GetVideoStreams();
+
+                
+                /*
                 var streamInfos = new IStreamInfo[] { audioStreamInfo, videoStreamInfo };
                 tb_Author.Text = "Author: " + video.Author.ChannelTitle;
                 tb_Title.Text = "Title: " + video.Title;
@@ -163,7 +200,7 @@ namespace YouTubeDownloaderGUI
                     });
                     string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
                     //await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-                    await youtube.Videos.DownloadAsync(url, downloadPath, progress);
+                    await youtube.Videos.DownloadAsync(url, downloadPath);
                     await Task.Delay(500);
                 }
                     downloadProgress.Value = 0;
@@ -172,7 +209,7 @@ namespace YouTubeDownloaderGUI
                     tb_Duration.Text = "Duration:";
                     TbProgress.Text = "0%";
                     tb_FileSize.Text = "Filesize:";
-            
+            */
             }
             else if (url.Contains("playlist?list="))
             {
