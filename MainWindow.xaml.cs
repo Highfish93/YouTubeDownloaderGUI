@@ -8,9 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using YoutubeExplode;
-using YoutubeExplode.Common;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos.Streams;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace YouTubeDownloaderGUI
 {
     /// <summary>
@@ -21,6 +22,7 @@ namespace YouTubeDownloaderGUI
         public MainWindow()
         {
             InitializeComponent();
+            tb_Link.Text = "https://www.youtube.com/watch?v=rJNBGqiBI7s";
         }
 
         public static string Encode2URL(string file)
@@ -133,134 +135,54 @@ namespace YouTubeDownloaderGUI
         }
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            string url = tb_Link.Text;
-            tb_Link.Text = "";
+            DownloadVideo(tb_Link.Text);
+            
+        }
+
+        private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            tb_FileSize.Text = "";
+            downloadProgress.Value = 0;
+            TbProgress.Text = "0%";
+            YoutubeClient youtube = new YoutubeClient();
+            var video = await youtube.Videos.GetAsync(tb_Link.Text);
+            tb_Author.Text = "Author: " + video.Author.ChannelTitle;
+            tb_Title.Text = "Title: " + video.Title;
+            tb_Duration.Text = "Duration: " + video.Duration.Value.ToString() + "h";
+        }
+
+        public async void DownloadVideo(string url)
+        {
             YoutubeClient youtube = new YoutubeClient();
             if (url.Contains("watch?") || (url.Contains("shorts")))
             {
                 string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
                 var video = await youtube.Videos.GetAsync(url);
-                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Url);
-                var audioStreamInfo = streamManifest.GetAudioStreams().First();
-
-                var videoStreamInfo = streamManifest.GetVideoStreams();
-                List<IVideoStreamInfo> videolist = new List<IVideoStreamInfo>();
-                foreach(var vsi in videoStreamInfo)
-                {
-                    if (vsi.Container == Container.WebM && !videolist.Contains(vsi))
-                        videolist.Add(vsi);
-                }
-                cb_VideoQualtity.ItemsSource = videolist.Distinct().ToList();
-                while(cb_VideoQualtity.SelectedIndex == -1)
-                {
-                    await Task.Delay(10);
-                }
-                var selectedStream = (IStreamInfo)cb_VideoQualtity.SelectedItem;
-                var streamInfos = new IStreamInfo[] { audioStreamInfo, selectedStream };
-                var fileSizeVideo = streamInfos[1].Size.Bytes;
-                var fileSizeAudio = streamInfos[0].Size.Bytes;
-                tb_FileSize.Text = "Filesize: " + ConvertBytes(fileSizeVideo + fileSizeAudio);
                 outputPath += @$"{video.Author}\";
                 Directory.CreateDirectory(outputPath);
+                string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
+                
                 var progress = new Progress<double>(p =>
                 {
                     var newP = Math.Round((decimal)p * 100, 2);
                     downloadProgress.Value = Convert.ToDouble(newP);
                     TbProgress.Text = newP.ToString() + "%";
                 });
-                string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
-                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-                //var newVideoInfoList = streamManifest.GetVideoStreams().;
-                //foreach (var info in newVideoInfoList)
-                //{
-                //MessageBox.Show(info.ToString());
-                //}
-                var tmp = streamManifest.GetVideoStreams();
-
-                
                 /*
-                var streamInfos = new IStreamInfo[] { audioStreamInfo, videoStreamInfo };
-                tb_Author.Text = "Author: " + video.Author.ChannelTitle;
-                tb_Title.Text = "Title: " + video.Title;
-                tb_Duration.Text = "Duration: " + video.Duration + "h";
-                await Task.Delay(200);
-                MessageBox.Show(ConvertBytes(videoStreamInfo.Size.Bytes));
-                MessageBox.Show(ConvertBytes(audioStreamInfo.Size.Bytes));
-                tb_FileSize.Text = "Filesize: " + ConvertBytes(audioStreamInfo.Size.Bytes + videoStreamInfo.Size.Bytes);
-                var result = MessageBox.Show("Really download?", "Download", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
-                if (result == MessageBoxResult.Yes)
-                {
-                    outputPath += @$"{video.Author}\";
-                    Directory.CreateDirectory(outputPath);
-                    var progress = new Progress<double>(p =>
-                    {
-                        var newP = Math.Round((decimal)p * 100, 2);
-                        downloadProgress.Value = Convert.ToDouble(newP);
-                        TbProgress.Text = newP.ToString() + "%";
-                    });
-                    string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
-                    //await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-                    await youtube.Videos.DownloadAsync(url, downloadPath);
-                    await Task.Delay(500);
-                }
-                    downloadProgress.Value = 0;
-                    tb_Author.Text = "Author:";
-                    tb_Title.Text = "Title:";
-                    tb_Duration.Text = "Duration:";
-                    TbProgress.Text = "0%";
-                    tb_FileSize.Text = "Filesize:";
-            */
-            }
-            else if (url.Contains("playlist?list="))
-            {
-                var mbRes = MessageBox.Show("Really download?", "Download", MessageBoxButton.YesNo, MessageBoxImage.None, MessageBoxResult.Yes);
-                if (mbRes == MessageBoxResult.Yes)
-                {
-                    int counter = 1;
-                    var pl = await youtube.Playlists.GetAsync(url);
-                    var plTitle = pl.Title;
-                    await foreach (var video in youtube.Playlists.GetVideosAsync(url))
-                    {
-                        string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
-                        var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Url);
-                        var audioStreamInfo = streamManifest.GetAudioStreams().GetWithHighestBitrate();
-                        var videoStreamInfo = streamManifest.GetVideoStreams().GetWithHighestVideoQuality();
-                        var streamInfos = new IStreamInfo[] { audioStreamInfo, videoStreamInfo };
+                await youtube.Videos.DownloadAsync(url, downloadPath, progress);
+                */
+                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
 
-                        tb_Author.Text = "Author: " + video.Author.ChannelTitle;
-                        tb_Title.Text = "Title: " + video.Title;
-                        tb_Duration.Text = "Duration: " + video.Duration + "h";
-                        tb_FileSize.Text = "Filesize: " + ConvertBytes(audioStreamInfo.Size.Bytes + videoStreamInfo.Size.Bytes);
-                        outputPath += @$"{video.Author}\{RemoveForbiddenChars(plTitle)}\";
-                        Directory.CreateDirectory(outputPath);
-                        var progress = new Progress<double>(p =>
-                        {
-                            var newP = Math.Round((decimal)p * 100, 2);
-                            downloadProgress.Value = Convert.ToDouble(newP);
-                            TbProgress.Text = newP.ToString() + "%";
-                        });
-                        string downloadPath = outputPath + counter.ToString("00") + " - " + RemoveForbiddenChars(video.Title) + ".mp4";
-                        if (!File.Exists(downloadPath))
-                        {
-                            await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-                            await Task.Delay(500);
-                            downloadProgress.Value = 0;
-                            tb_Author.Text = "Author:";
-                            tb_Title.Text = "Title:";
-                            tb_Duration.Text = "Duration:";
-                            TbProgress.Text = "0%";
-                            tb_FileSize.Text = "Filesize:";
-                        }
-                        counter += 1;
-                    }
-                }
-            }
-            
-        }
+                // Select streams (1080p60 / highest bitrate audio)
+                var audioStreamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                //var videoStreamInfo = streamManifest.GetVideoStreams().First(s => s.VideoQuality.Label == "1080p");
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            CreateVlcPlaylist(@"C:\Users\skrie\Desktop\Projekte\C#\YouTubeDownloaderGUI\YouTubeDownloaderGUI\bin\Debug\net7.0-windows\Downloads\Yannick\HerrAnwalt Das Spiel\");
+                var streams = streamManifest.GetVideoOnlyStreams().Where(s => s.Container == Container.Mp4 & !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
+                var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
+                var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
+                tb_FileSize.Text = tmp.ToString();
+                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(),progress);
+            }
         }
     }
 }
