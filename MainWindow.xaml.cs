@@ -34,7 +34,7 @@ namespace YouTubeDownloaderGUI
             public string? playlistTitle { get; set; }
             public string? author { get; set; }
             public string? duration { get; set; }
-            public bool downloadChecked { get; set; }
+            public bool downloadChecked { get; set; } = true;
             public bool likeCheck { get; set; }
         }
 
@@ -226,6 +226,11 @@ namespace YouTubeDownloaderGUI
             var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
             //tb_FileSize.Text = tmp.ToString();
             await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
+        }
+
+        private void ListViewVideos_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            ListViewVideos.SelectedIndex = -1;
         }
     }
 }

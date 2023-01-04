@@ -11,7 +11,7 @@
             <RowDefinition Height="44*"/>
             <RowDefinition Height="47*"/>
         </Grid.RowDefinitions>
-        <ListView x:Name="ListViewVideos" FontSize="12" Background="#00000000" IsSynchronizedWithCurrentItem="False" Margin="10,29,10,35" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" Grid.RowSpan="2">
+        <ListView x:Name="ListViewVideos" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideos_SelectionChanged" IsSynchronizedWithCurrentItem="False" Margin="10,29,10,35" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" Grid.RowSpan="2">
             <ListView.View>
                 <GridView AllowsColumnReorder="false">
                     <GridViewColumn Header="Titel">
