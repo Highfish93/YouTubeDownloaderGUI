@@ -19,10 +19,23 @@ namespace YouTubeDownloaderGUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        public List<VideoInfo> VideoInfos = new List<VideoInfo>();
+
         public MainWindow()
         {
             InitializeComponent();
             tb_Link.Text = "https://www.youtube.com/watch?v=rJNBGqiBI7s";
+        }
+
+        public class VideoInfo
+        {
+            public string? url { get; set; }
+            public string? title { get; set; }
+            public string? playlistTitle { get; set; }
+            public string? author { get; set; }
+            public string? duration { get; set; }
+            public bool downloadChecked { get; set; }
+            public bool likeCheck { get; set; }
         }
 
         public static string Encode2URL(string file)
@@ -133,71 +146,85 @@ namespace YouTubeDownloaderGUI
             text = text.Replace("  ", " ");
             return text;
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            DownloadVideo(tb_Link.Text);
+            foreach(VideoInfo video in ListViewVideos.Items) 
+            {
+                if (video.downloadChecked)
+                {
+                    await DownloadVideo(video.url, tb_Link.Text.Contains("playlist?list="));
+                }   
+            }
+            
             
         }
 
         private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
+            VideoInfos.Clear();
+            ListViewVideos.ItemsSource = null;
             YoutubeClient youtube = new YoutubeClient();
             if (tb_Link.Text.Contains("watch") | tb_Link.Text.Contains("shorts"))
             {
-                tb_FileSize.Text = "";
                 downloadProgress.Value = 0;
                 TbProgress.Text = "0%";
                 var video = await youtube.Videos.GetAsync(tb_Link.Text);
-                tb_Author.Text = "Author: " + video.Author.ChannelTitle;
-                tb_Title.Text = "Title: " + video.Title;
-                tb_Duration.Text = "Duration: " + video.Duration.Value.ToString() + "h";
+                //video.UploadDate
+                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h" });
             }
             else if (tb_Link.Text.Contains("playlist?list="))
             {
-                var counter = 0;
+                var pl = await youtube.Playlists.GetAsync(tb_Link.Text);
                 await foreach (var batch in youtube.Playlists.GetVideoBatchesAsync(tb_Link.Text))
                 {
                     foreach (var video in batch.Items)
                     {
-                        counter += 1;
-                        tb_Author.Text = "Author: " + video.Author;
-                        tb_Title.Text = "Title: " + video.Title;
-                        tb_Duration.Text = "Duration: " + video.Duration.Value.ToString() + "h";
-                        DownloadVideo(video.Url);
+                        VideoInfos.Add(new VideoInfo { url = video.Url, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h", playlistTitle = pl.Title });
                     }
                 }
 
             }
+            ListViewVideos.ItemsSource = VideoInfos;
         }
 
-        public async void DownloadVideo(string url)
+        public async Task DownloadVideo(string url,bool playlist = false)
         {
             YoutubeClient youtube = new YoutubeClient();
             string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
             var video = await youtube.Videos.GetAsync(url);
-            outputPath += @$"{video.Author}\";
-            Directory.CreateDirectory(outputPath);
-            string downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
 
+            string downloadPath;
+
+
+            if (playlist)
+            {
+                var item = VideoInfos.FirstOrDefault(e => e.url == url);
+                var index = VideoInfos.IndexOf(item) + 1;
+                outputPath += @$"{video.Author}\" + VideoInfos[index].playlistTitle + "\\";
+                downloadPath = outputPath + index.ToString("D2") + " - " + RemoveForbiddenChars(video.Title) + ".mp4";
+                //"\\" + VideoInfos[index].playlistTitle + "\\" + index.ToString("D2") + " - " +
+            }
+            else
+            {
+                outputPath += @$"{video.Author}\";
+                downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
+            }
+            Directory.CreateDirectory(outputPath);
+            
             var progress = new Progress<double>(p =>
             {
                 var newP = Math.Round((decimal)p * 100, 2);
                 downloadProgress.Value = Convert.ToDouble(newP);
                 TbProgress.Text = newP.ToString() + "%";
             });
-            /*
-            await youtube.Videos.DownloadAsync(url, downloadPath, progress);
-            */
             var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url);
 
-            // Select streams (1080p60 / highest bitrate audio)
             var audioStreamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-            //var videoStreamInfo = streamManifest.GetVideoStreams().First(s => s.VideoQuality.Label == "1080p");
 
             var streams = streamManifest.GetVideoOnlyStreams().Where(s => !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
             var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
             var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
-            tb_FileSize.Text = tmp.ToString();
+            //tb_FileSize.Text = tmp.ToString();
             await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
         }
     }
