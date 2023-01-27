@@ -24,7 +24,6 @@ namespace YouTubeDownloaderGUI
         public MainWindow()
         {
             InitializeComponent();
-            tb_Link.Text = "https://www.youtube.com/watch?v=rJNBGqiBI7s";
         }
 
         public class VideoInfo
@@ -34,6 +33,7 @@ namespace YouTubeDownloaderGUI
             public string? playlistTitle { get; set; }
             public string? author { get; set; }
             public string? duration { get; set; }
+            public DateTimeOffset? uploadDate { get; set; }
             public bool downloadChecked { get; set; } = true;
             public bool likeCheck { get; set; }
         }
@@ -170,7 +170,7 @@ namespace YouTubeDownloaderGUI
                 TbProgress.Text = "0%";
                 var video = await youtube.Videos.GetAsync(tb_Link.Text);
                 //video.UploadDate
-                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h" });
+                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h" , uploadDate=video.UploadDate});
             }
             else if (tb_Link.Text.Contains("playlist?list="))
             {
@@ -187,7 +187,7 @@ namespace YouTubeDownloaderGUI
             ListViewVideos.ItemsSource = VideoInfos;
         }
 
-        public async Task DownloadVideo(string url,bool playlist = false)
+        public async Task DownloadVideo(string url, bool playlist = false)
         {
             YoutubeClient youtube = new YoutubeClient();
             string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
@@ -200,17 +200,17 @@ namespace YouTubeDownloaderGUI
             {
                 var item = VideoInfos.FirstOrDefault(e => e.url == url);
                 var index = VideoInfos.IndexOf(item) + 1;
-                outputPath += @$"{video.Author}\" + VideoInfos[index].playlistTitle + "\\";
+                outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\" + RemoveForbiddenChars(VideoInfos[index].playlistTitle) + "\\";
                 downloadPath = outputPath + index.ToString("D2") + " - " + RemoveForbiddenChars(video.Title) + ".mp4";
                 //"\\" + VideoInfos[index].playlistTitle + "\\" + index.ToString("D2") + " - " +
             }
             else
             {
-                outputPath += @$"{video.Author}\";
+                outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\";
                 downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
             }
             Directory.CreateDirectory(outputPath);
-            
+
             var progress = new Progress<double>(p =>
             {
                 var newP = Math.Round((decimal)p * 100, 2);
@@ -225,9 +225,16 @@ namespace YouTubeDownloaderGUI
             var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
             var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
             //tb_FileSize.Text = tmp.ToString();
-            await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-        }
+            try
+            {
+                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
 
+            }
+            catch
+            {
+
+            }
+        }
         private void ListViewVideos_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             ListViewVideos.SelectedIndex = -1;
