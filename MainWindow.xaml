@@ -87,9 +87,10 @@
         </ListView>
         <TextBox Name="tb_Link" Margin="10,6,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged"/>
 
-        <Button Content="Download" HorizontalAlignment="Left" Margin="10,199,0,0" VerticalAlignment="Top" Click="Button_Click" Height="25" Width="107" Grid.Row="1"/>
+        <Button x:Name="btnDownload" Content="Download" HorizontalAlignment="Left" Margin="10,199,0,0" VerticalAlignment="Top" Click="btnDownload_Click" Height="25" Width="107" Grid.Row="1"/>
         <ProgressBar Name="downloadProgress" Height="25" Margin="122,199,10,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <TextBlock x:Name="TbProgress" Margin="122,204,10,0" TextWrapping="Wrap" Text="0%" VerticalAlignment="Top" Height="20" FontWeight="Bold" TextAlignment="Center" Grid.Row="1"/>
+        <TextBlock x:Name="TbProgress" Margin="122,204,10,0" TextWrapping="Wrap" Text="0.00
+%" VerticalAlignment="Top" Height="20" FontWeight="Bold" TextAlignment="Center" Grid.Row="1"/>
 
     </Grid>
 </Window>

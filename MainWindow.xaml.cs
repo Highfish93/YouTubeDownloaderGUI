@@ -10,6 +10,7 @@ using System.Windows;
 using YoutubeExplode;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos.Streams;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YouTubeDownloaderGUI
@@ -146,18 +147,6 @@ namespace YouTubeDownloaderGUI
             text = text.Replace("  ", " ");
             return text;
         }
-        private async void Button_Click(object sender, RoutedEventArgs e)
-        {
-            foreach(VideoInfo video in ListViewVideos.Items) 
-            {
-                if (video.downloadChecked)
-                {
-                    await DownloadVideo(video.url, tb_Link.Text.Contains("playlist?list="));
-                }   
-            }
-            
-            
-        }
 
         private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
@@ -225,19 +214,32 @@ namespace YouTubeDownloaderGUI
             var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
             var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
             //tb_FileSize.Text = tmp.ToString();
-            try
-            {
-                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-
-            }
-            catch
-            {
-
-            }
+            await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
         }
+
+            
+        
         private void ListViewVideos_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             ListViewVideos.SelectedIndex = -1;
+        }
+
+        private async void btnDownload_Click(object sender, RoutedEventArgs e)
+        {
+            btnDownload.IsEnabled = false;
+            bool pl = tb_Link.Text.Contains("playlist?list=");
+            foreach (VideoInfo video in ListViewVideos.Items)
+            {
+                if (video.downloadChecked)
+                {
+                    await DownloadVideo(video.url, pl);
+                }
+            }
+            if (pl)
+            {
+                MessageBox.Show("Download Completed");
+            }
+            btnDownload.IsEnabled = true;
         }
     }
 }
