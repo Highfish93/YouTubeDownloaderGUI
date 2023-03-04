@@ -212,8 +212,8 @@ namespace YouTubeDownloaderGUI
 
             var streams = streamManifest.GetVideoOnlyStreams().Where(s => !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
             var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
-            var tmp = streams.First().Size.MegaBytes + audioStreamInfo.Size.MegaBytes;
-            //tb_FileSize.Text = tmp.ToString();
+            var tmp = streamInfos.First().Size.MegaBytes;
+            tb_FileSize.Text = tmp.ToString();
             await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
         }
 
