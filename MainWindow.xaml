@@ -5,92 +5,174 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YouTubeDownloaderGUI"
         mc:Ignorable="d"
-        Title="YouTubeDownloader by Highfish" Height="514" ResizeMode="NoResize" Width="711">
-    <Grid Margin="0,0,0,4">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="44*"/>
-            <RowDefinition Height="47*"/>
-        </Grid.RowDefinitions>
-        <ListView x:Name="ListViewVideos" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideos_SelectionChanged" IsSynchronizedWithCurrentItem="False" Margin="10,29,10,35" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" Grid.RowSpan="2">
-            <ListView.View>
-                <GridView AllowsColumnReorder="false">
-                    <GridViewColumn Header="Titel">
-                        <GridViewColumn.HeaderContainerStyle>
-                            <Style TargetType="{x:Type FrameworkElement}">
-                                <Setter Property="IsHitTestVisible" Value="False"/>
-                            </Style>
-                        </GridViewColumn.HeaderContainerStyle>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="150"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Author" Width="auto">
-                        <GridViewColumn.HeaderContainerStyle>
-                            <Style TargetType="{x:Type FrameworkElement}">
-                                <Setter Property="IsHitTestVisible" Value="False"/>
-                            </Style>
-                        </GridViewColumn.HeaderContainerStyle>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Duration" Width="Auto">
-                        <GridViewColumn.HeaderContainerStyle>
-                            <Style TargetType="{x:Type FrameworkElement}">
-                                <Setter Property="IsHitTestVisible" Value="False"/>
-                            </Style>
-                        </GridViewColumn.HeaderContainerStyle>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding duration}" TextAlignment="Center"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
+        Title="YouTubeDownloader by Highfish" Height="600" ResizeMode="NoResize" Width="850" Loaded="Window_Loaded">
 
-                    <GridViewColumn Header="Video" Width="Auto">
-                        <GridViewColumn.HeaderContainerStyle>
-                            <Style TargetType="{x:Type FrameworkElement}">
-                                <Setter Property="IsHitTestVisible" Value="False"/>
-                            </Style>
-                        </GridViewColumn.HeaderContainerStyle>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Vertical">
-                                    <CheckBox
+    <StackPanel HorizontalAlignment="Center" Width="750">
+        <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"/>
+        <StackPanel Orientation="Vertical" Margin="10,0,10,0" Height="450">
+            <ListView x:Name="ListViewVideos" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideos_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" AllowDrop="True" PreviewMouseMove="ListViewVideos_PreviewMouseMove" Drop="ListViewVideos_Drop">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="false">
+                        <GridViewColumn Header="Titel">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="150"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Author" Width="auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Duration" Width="Auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding duration}" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header="Video" Width="Auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical">
+                                        <CheckBox
                                         Content="Download"
                                         HorizontalAlignment="Left"
                                         IsChecked="{Binding downloadChecked}"
                                         
                                         >
-                                    </CheckBox>
-                                    <CheckBox
+                                        </CheckBox>
+                                        <CheckBox
                                         Content="Like"
                                         HorizontalAlignment="Left"
                                         IsChecked="{Binding likeCheck}">
-                                    </CheckBox>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <TextBox Name="tb_Link" Margin="10,6,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged"/>
+                                        </CheckBox>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
+                <Button Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0"/>
+                <Button Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0"/>
+            </StackPanel>
+            <ListView x:Name="ListViewVideosQueue" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideosQueue_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" AllowDrop="True" PreviewMouseMove="ListViewVideosQueue_PreviewMouseMove" Drop="ListViewVideosQueue_Drop">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="false">
+                        <GridViewColumn Header="Titel">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="150"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Author" Width="auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Duration" Width="Auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding duration}" TextAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
 
-        <Button x:Name="btnDownload" Content="Download" HorizontalAlignment="Left" Margin="10,199,0,0" VerticalAlignment="Top" Click="btnDownload_Click" Height="25" Width="107" Grid.Row="1"/>
-        <ProgressBar Name="downloadProgress" Height="25" Margin="122,199,10,0" VerticalAlignment="Top" Grid.Row="1"/>
-        <TextBlock x:Name="TbProgress" Margin="122,204,10,0" TextWrapping="Wrap" Text="0.00%" VerticalAlignment="Top" Height="20" FontWeight="Bold" TextAlignment="Center" Grid.Row="1"/>
-        <TextBlock x:Name="tb_FileSize" Margin="10,229,601,0" Width="100" Grid.Row="1" Text="---"/>
+                        <GridViewColumn Header="Progress" Width="Auto">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type FrameworkElement}">
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ProgressBar Value="{Binding progress}" Width="150">
+                                        <ProgressBar.Template>
+                                            <ControlTemplate TargetType="{x:Type ProgressBar}">
+                                                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="2">
+                                                    <Grid x:Name="PART_Track">
+                                                        <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" Fill="{TemplateBinding Foreground}" />
+                                                        <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" />
+                                                    </Grid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ProgressBar.Template>
+                                    </ProgressBar>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Margin="5,10,5,0">
 
-    </Grid>
+
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="btnDownload" Content="Download" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="btnDownload_Click" Height="25" Width="107" Grid.Row="1"/>
+                <ProgressBar Name="downloadProgress" Width="605" Height="25" Margin="10,10,0,0" HorizontalAlignment="Right"/>
+                <TextBlock x:Name="TbProgress" Margin="-500,15,0,0" TextWrapping="Wrap" Text="0.00%" Width="500" Height="23" FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            </StackPanel>
+
+
+            <TextBlock x:Name="tb_FileSize" Margin="15,0,70,4" Grid.Row="1" Text="---"/>
+        </StackPanel>
+    </StackPanel>
+
 </Window>

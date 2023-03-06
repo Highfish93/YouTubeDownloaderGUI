@@ -2,11 +2,13 @@
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using YoutubeExplode;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos.Streams;
@@ -21,6 +23,7 @@ namespace YouTubeDownloaderGUI
     public partial class MainWindow : Window
     {
         public List<VideoInfo> VideoInfos = new List<VideoInfo>();
+        public List<VideoInfo> VideoQueue = new List<VideoInfo>();
 
         public MainWindow()
         {
@@ -37,6 +40,8 @@ namespace YouTubeDownloaderGUI
             public DateTimeOffset? uploadDate { get; set; }
             public bool downloadChecked { get; set; } = true;
             public bool likeCheck { get; set; }
+
+            public float progress { get; set; }
         }
 
         public static string Encode2URL(string file)
@@ -221,7 +226,7 @@ namespace YouTubeDownloaderGUI
         
         private void ListViewVideos_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            ListViewVideos.SelectedIndex = -1;
+            //ListViewVideos.SelectedIndex = -1;
         }
 
         private async void btnDownload_Click(object sender, RoutedEventArgs e)
@@ -240,6 +245,82 @@ namespace YouTubeDownloaderGUI
                 MessageBox.Show("Download Completed");
             }
             btnDownload.IsEnabled = true;
+        }
+
+        private void ListViewVideosQueue_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void ListViewVideos_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            { 
+                DragDrop.DoDragDrop(ListViewVideos, ListViewVideos.SelectedItem, DragDropEffects.Move);
+            }
+        }
+
+        private void ListViewVideosQueue_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            {
+                DragDrop.DoDragDrop(ListViewVideosQueue, ListViewVideosQueue.SelectedItem, DragDropEffects.Move);
+            }
+        }
+
+        private void ListViewVideos_Drop(object sender, DragEventArgs e)
+        {
+            if(e.Data.GetDataPresent(typeof(VideoInfo)))
+            {
+                VideoInfo item = (VideoInfo)e.Data.GetData(typeof(VideoInfo));
+                VideoInfos.Add(item);
+                ListViewVideos.ItemsSource = null;
+                ListViewVideos.ItemsSource = VideoInfos;
+                VideoQueue.Remove(item);
+                ListViewVideosQueue.ItemsSource = null;
+                ListViewVideosQueue.ItemsSource = VideoQueue;
+            }
+        }
+
+        private void ListViewVideosQueue_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(VideoInfo)))
+            {
+                VideoInfo item = (VideoInfo)e.Data.GetData(typeof(VideoInfo));
+                VideoQueue.Add(item);
+                ListViewVideosQueue.ItemsSource = null;
+                ListViewVideosQueue.ItemsSource = VideoQueue;
+                VideoInfos.Remove(item);
+                ListViewVideos.ItemsSource = null;
+                ListViewVideos.ItemsSource = VideoInfos;
+            }
+        }
+
+        public class IsIndeterminateConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                if (value == null)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            while(true)
+            {
+                if(VideoQueue.Count >= 1)
+                    await DownloadVideo(VideoQueue[0].url);
+                await Task.Delay(100);
+            }
         }
     }
 }
