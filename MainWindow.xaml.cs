@@ -1,7 +1,9 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
+using Google.Apis.Util;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
+using Google.Apis.YouTube.v3.Data;
 using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
@@ -354,7 +356,6 @@ namespace YouTubeDownloaderGUI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            test();
             while (true)
             {
                 if (VideoQueue.Count >= 1)
@@ -385,51 +386,6 @@ namespace YouTubeDownloaderGUI
             ListViewVideosQueue.ItemsSource = null;
             ListViewVideosQueue.ItemsSource = VideoQueue;
             VideoInfos.Clear();
-        }
-
-        public async void test()
-        {
-            UserCredential credential;
-            using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
-            {
-                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    new[] { YouTubeService.Scope.Youtube },
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore("YoutubeAPI")
-                );
-            }
-
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "YoutubeAPI",
-                ApiKey = "AIzaSyALvidCoH9V6qWL12srN_PRxNBbkpcGFBE"
-            });
-
-            var subscriptionsRequest = youtubeService.Subscriptions.List("snippet");
-            subscriptionsRequest.Mine = true;
-            var subscriptionsResponse = await subscriptionsRequest.ExecuteAsync();
-
-            Console.WriteLine("Your subscriptions:");
-            foreach (var subscription in subscriptionsResponse.Items)
-            {
-                MessageBox.Show(subscription.Snippet.Title);
-                //ListViewVideos.Items.Add(subscription.Snippet.Title);
-            }
-
-            var activitiesRequest = youtubeService.Activities.List("contentDetails");
-            activitiesRequest.Home = true;
-            activitiesRequest.MaxResults = 10;
-            var activitiesResponse = await activitiesRequest.ExecuteAsync();
-
-            Console.WriteLine("Your recent activity:");
-            foreach (var activity in activitiesResponse.Items)
-            {
-                MessageBox.Show(activity.ContentDetails.Upload.VideoId);
-            }
-
         }
     }
 }
