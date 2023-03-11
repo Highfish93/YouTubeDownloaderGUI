@@ -85,8 +85,8 @@
                 </ListView.View>
             </ListView>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
-                <Button Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0"/>
-                <Button Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0"/>
+                <Button x:Name="AddAllToListButton" Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0" Click="AddAllToListButton_Click"/>
+                <Button x:Name="AddAllToQueueButton" Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0" Click="AddAllToQueueButton_Click"/>
             </StackPanel>
             <ListView x:Name="ListViewVideosQueue" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideosQueue_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" AllowDrop="True" PreviewMouseMove="ListViewVideosQueue_PreviewMouseMove" Drop="ListViewVideosQueue_Drop">
                 <ListView.View>

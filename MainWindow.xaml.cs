@@ -1,4 +1,8 @@
-﻿using Microsoft.WindowsAPICodePack.Shell;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
+using Google.Apis.YouTube.v3;
+using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
@@ -6,10 +10,12 @@ using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using YoutubeExplode;
+using YoutubeExplode.Common;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos.Streams;
 using static System.Net.Mime.MediaTypeNames;
@@ -178,6 +184,29 @@ namespace YouTubeDownloaderGUI
                 }
 
             }
+            else
+            {
+
+                var test = youtube.Search.GetVideosAsync(tb_Link.Text);
+                int index = 0;
+                await foreach(var i in test)
+                {
+                    if (index < 20)
+                    {
+                        try
+                        {
+                            VideoInfos.Add(new VideoInfo { url = i.Url, title = i.Title, author = i.Author.ChannelTitle, duration = i.Duration.Value.ToString() + "h" });
+                            index++;
+                        }
+                        catch { }
+                        
+                    }
+                    else
+                        break;
+                }
+                //video.UploadDate
+                
+            }
             ListViewVideos.ItemsSource = VideoInfos;
         }
 
@@ -258,7 +287,7 @@ namespace YouTubeDownloaderGUI
 
         private void ListViewVideos_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideos.Items.Count > 0)
             { 
                 DragDrop.DoDragDrop(ListViewVideos, ListViewVideos.SelectedItem, DragDropEffects.Move);
             }
@@ -266,7 +295,7 @@ namespace YouTubeDownloaderGUI
 
         private void ListViewVideosQueue_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideosQueue.Items.Count > 0)
             {
                 DragDrop.DoDragDrop(ListViewVideosQueue, ListViewVideosQueue.SelectedItem, DragDropEffects.Move);
             }
@@ -277,12 +306,15 @@ namespace YouTubeDownloaderGUI
             if(e.Data.GetDataPresent(typeof(VideoInfo)))
             {
                 VideoInfo item = (VideoInfo)e.Data.GetData(typeof(VideoInfo));
-                VideoInfos.Add(item);
-                ListViewVideos.ItemsSource = null;
-                ListViewVideos.ItemsSource = VideoInfos;
-                VideoQueue.Remove(item);
-                ListViewVideosQueue.ItemsSource = null;
-                ListViewVideosQueue.ItemsSource = VideoQueue;
+                if (!VideoInfos.Contains(item))
+                {
+                    VideoInfos.Add(item);
+                    ListViewVideos.ItemsSource = null;
+                    ListViewVideos.ItemsSource = VideoInfos;
+                    VideoQueue.Remove(item);
+                    ListViewVideosQueue.ItemsSource = null;
+                    ListViewVideosQueue.ItemsSource = VideoQueue;
+                }
             }
         }
 
@@ -291,12 +323,15 @@ namespace YouTubeDownloaderGUI
             if (e.Data.GetDataPresent(typeof(VideoInfo)))
             {
                 VideoInfo item = (VideoInfo)e.Data.GetData(typeof(VideoInfo));
-                VideoQueue.Add(item);
-                ListViewVideosQueue.ItemsSource = null;
-                ListViewVideosQueue.ItemsSource = VideoQueue;
-                VideoInfos.Remove(item);
-                ListViewVideos.ItemsSource = null;
-                ListViewVideos.ItemsSource = VideoInfos;
+                if (!VideoQueue.Contains(item))
+                {
+                    VideoQueue.Add(item);
+                    ListViewVideosQueue.ItemsSource = null;
+                    ListViewVideosQueue.ItemsSource = VideoQueue;
+                    VideoInfos.Remove(item);
+                    ListViewVideos.ItemsSource = null;
+                    ListViewVideos.ItemsSource = VideoInfos;
+                }
             }
         }
 
@@ -319,7 +354,8 @@ namespace YouTubeDownloaderGUI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            while(true)
+            test();
+            while (true)
             {
                 if (VideoQueue.Count >= 1)
                 {
@@ -328,6 +364,72 @@ namespace YouTubeDownloaderGUI
                 }
                 await Task.Delay(100);
             }
+            
+        }
+
+        private void AddAllToListButton_Click(object sender, RoutedEventArgs e)
+        {
+            VideoInfos.AddRange(VideoQueue);
+            ListViewVideos.ItemsSource = null;
+            ListViewVideos.ItemsSource = VideoInfos;
+            ListViewVideosQueue.ItemsSource = null;
+            ListViewVideosQueue.ItemsSource = VideoQueue;
+            VideoQueue.Clear();
+        }
+
+        private void AddAllToQueueButton_Click(object sender, RoutedEventArgs e)
+        {
+            VideoQueue.AddRange(VideoInfos);
+            ListViewVideos.ItemsSource = null;
+            ListViewVideos.ItemsSource = VideoInfos;
+            ListViewVideosQueue.ItemsSource = null;
+            ListViewVideosQueue.ItemsSource = VideoQueue;
+            VideoInfos.Clear();
+        }
+
+        public async void test()
+        {
+            UserCredential credential;
+            using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
+            {
+                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    new[] { YouTubeService.Scope.Youtube },
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore("YoutubeAPI")
+                );
+            }
+
+            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "YoutubeAPI",
+                ApiKey = "AIzaSyALvidCoH9V6qWL12srN_PRxNBbkpcGFBE"
+            });
+
+            var subscriptionsRequest = youtubeService.Subscriptions.List("snippet");
+            subscriptionsRequest.Mine = true;
+            var subscriptionsResponse = await subscriptionsRequest.ExecuteAsync();
+
+            Console.WriteLine("Your subscriptions:");
+            foreach (var subscription in subscriptionsResponse.Items)
+            {
+                MessageBox.Show(subscription.Snippet.Title);
+                //ListViewVideos.Items.Add(subscription.Snippet.Title);
+            }
+
+            var activitiesRequest = youtubeService.Activities.List("contentDetails");
+            activitiesRequest.Home = true;
+            activitiesRequest.MaxResults = 10;
+            var activitiesResponse = await activitiesRequest.ExecuteAsync();
+
+            Console.WriteLine("Your recent activity:");
+            foreach (var activity in activitiesResponse.Items)
+            {
+                MessageBox.Show(activity.ContentDetails.Upload.VideoId);
+            }
+
         }
     }
 }
