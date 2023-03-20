@@ -8,6 +8,7 @@ using Microsoft.WindowsAPICodePack.Shell;
 using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
@@ -16,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Converter;
@@ -30,8 +32,8 @@ namespace YouTubeDownloaderGUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public List<VideoInfo> VideoInfos = new List<VideoInfo>();
-        public List<VideoInfo> VideoQueue = new List<VideoInfo>();
+        public ObservableCollection<VideoInfo> VideoInfos = new ObservableCollection<VideoInfo>();
+        public ObservableCollection<VideoInfo> VideoQueue = new ObservableCollection<VideoInfo>();
 
         public MainWindow()
         {
@@ -42,10 +44,12 @@ namespace YouTubeDownloaderGUI
         {
             public string? url { get; set; }
             public string? title { get; set; }
+            public BitmapImage? Thumbnail { get; set; }
             public string? playlistTitle { get; set; }
             public string? author { get; set; }
             public string? duration { get; set; }
             public DateTimeOffset? uploadDate { get; set; }
+            public string? Keywords { get; set; }
             public bool downloadChecked { get; set; } = true;
             public bool likeCheck { get; set; }
 
@@ -161,6 +165,9 @@ namespace YouTubeDownloaderGUI
             return text;
         }
 
+
+
+
         private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             VideoInfos.Clear();
@@ -168,11 +175,25 @@ namespace YouTubeDownloaderGUI
             YoutubeClient youtube = new YoutubeClient();
             if (tb_Link.Text.Contains("watch") | tb_Link.Text.Contains("shorts"))
             {
-                downloadProgress.Value = 0;
-                TbProgress.Text = "0%";
+
                 var video = await youtube.Videos.GetAsync(tb_Link.Text);
-                //video.UploadDate
-                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h" , uploadDate=video.UploadDate});
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.UriSource = new Uri(video.Thumbnails[0].Url);
+                bitmapImage.EndInit();
+
+                string keyW = "";
+                int index = 0;
+                foreach (var h in video.Keywords)
+                {
+                    if (index == video.Keywords.Count - 1)
+                        keyW += h;
+                    else
+                        keyW += h + ", ";
+                    index++;
+                }
+
+                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title,Thumbnail = bitmapImage, author = video.Author.ChannelTitle,Keywords=keyW, duration = video.Duration.Value.ToString() , uploadDate=video.UploadDate});
             }
             else if (tb_Link.Text.Contains("playlist?list="))
             {
@@ -311,11 +332,7 @@ namespace YouTubeDownloaderGUI
                 if (!VideoInfos.Contains(item))
                 {
                     VideoInfos.Add(item);
-                    ListViewVideos.ItemsSource = null;
-                    ListViewVideos.ItemsSource = VideoInfos;
                     VideoQueue.Remove(item);
-                    ListViewVideosQueue.ItemsSource = null;
-                    ListViewVideosQueue.ItemsSource = VideoQueue;
                 }
             }
         }
@@ -328,11 +345,7 @@ namespace YouTubeDownloaderGUI
                 if (!VideoQueue.Contains(item))
                 {
                     VideoQueue.Add(item);
-                    ListViewVideosQueue.ItemsSource = null;
-                    ListViewVideosQueue.ItemsSource = VideoQueue;
                     VideoInfos.Remove(item);
-                    ListViewVideos.ItemsSource = null;
-                    ListViewVideos.ItemsSource = VideoInfos;
                 }
             }
         }
@@ -356,12 +369,22 @@ namespace YouTubeDownloaderGUI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            ListViewVideos.ItemsSource = VideoInfos;
+            ListViewVideosQueue.ItemsSource = VideoQueue;
+            string ClipBoard = "-";
             while (true)
             {
+                if (ClipBoard != Clipboard.GetText())
+                {
+                    ClipBoard = Clipboard.GetText();
+                    if (ClipBoard.Contains("https://www.youtube.com") & tb_Link.Text != ClipBoard)
+                        tb_Link.Text = ClipBoard;
+                }
+
                 if (VideoQueue.Count >= 1)
                 {
                     await DownloadVideo();
-                    ListViewVideosQueue.Items.Refresh();
+                    //ListViewVideosQueue.Items.Refresh();
                 }
                 await Task.Delay(100);
             }
@@ -370,21 +393,19 @@ namespace YouTubeDownloaderGUI
 
         private void AddAllToListButton_Click(object sender, RoutedEventArgs e)
         {
-            VideoInfos.AddRange(VideoQueue);
-            ListViewVideos.ItemsSource = null;
-            ListViewVideos.ItemsSource = VideoInfos;
-            ListViewVideosQueue.ItemsSource = null;
-            ListViewVideosQueue.ItemsSource = VideoQueue;
+            foreach (var i in VideoQueue)
+            {
+                VideoInfos.Add(i);
+            }
             VideoQueue.Clear();
         }
 
         private void AddAllToQueueButton_Click(object sender, RoutedEventArgs e)
         {
-            VideoQueue.AddRange(VideoInfos);
-            ListViewVideos.ItemsSource = null;
-            ListViewVideos.ItemsSource = VideoInfos;
-            ListViewVideosQueue.ItemsSource = null;
-            ListViewVideosQueue.ItemsSource = VideoQueue;
+            foreach (var i in VideoInfos)
+            {
+                VideoQueue.Add(i);
+            }
             VideoInfos.Clear();
         }
     }
