@@ -273,7 +273,7 @@ namespace YouTubeDownloaderGUI
                 var streams = streamManifest.GetVideoOnlyStreams().Where(s => !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
                 var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
                 var tmp = streamInfos.First().Size.MegaBytes;
-                tb_FileSize.Text = tmp.ToString();
+                //tb_FileSize.Text = tmp.ToString();
                 await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
                 VideoQueue.Remove(VideoQueue[0]);
         }
@@ -284,25 +284,6 @@ namespace YouTubeDownloaderGUI
         {
             //ListViewVideos.SelectedIndex = -1;
         }
-
-        private async void btnDownload_Click(object sender, RoutedEventArgs e)
-        {
-            btnDownload.IsEnabled = false;
-            bool pl = tb_Link.Text.Contains("playlist?list=");
-            foreach (VideoInfo video in ListViewVideos.Items)
-            {
-                if (video.downloadChecked)
-                {
-                    //await DownloadVideo(video.url, pl);
-                }
-            }
-            if (pl)
-            {
-                MessageBox.Show("Download Completed");
-            }
-            btnDownload.IsEnabled = true;
-        }
-
         private void ListViewVideosQueue_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
 
@@ -310,7 +291,7 @@ namespace YouTubeDownloaderGUI
 
         private void ListViewVideos_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideos.Items.Count > 0)
+            if(e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideos.Items.Count > 0 && ListViewVideos.SelectedIndex != -1)
             { 
                 DragDrop.DoDragDrop(ListViewVideos, ListViewVideos.SelectedItem, DragDropEffects.Move);
             }
@@ -318,7 +299,7 @@ namespace YouTubeDownloaderGUI
 
         private void ListViewVideosQueue_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideosQueue.Items.Count > 0)
+            if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed && ListViewVideosQueue.Items.Count > 0 && ListViewVideosQueue.SelectedIndex != -1)
             {
                 DragDrop.DoDragDrop(ListViewVideosQueue, ListViewVideosQueue.SelectedItem, DragDropEffects.Move);
             }

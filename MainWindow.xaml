@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YouTubeDownloaderGUI"
         mc:Ignorable="d"
-        Title="YouTubeDownloader by Highfish" Height="600" ResizeMode="NoResize" Width="850" Loaded="Window_Loaded">
+        Title="YouTubeDownloader by Highfish/Toni" Height="600" ResizeMode="CanMinimize" Width="850" Loaded="Window_Loaded" Background="#FF191919">
 
     <StackPanel HorizontalAlignment="Center" Width="750">
-        <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"/>
+        <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"  Background="#FF383838" Foreground="White"/>
         <StackPanel Orientation="Vertical" Margin="10,0,10,0" Height="450">
             <ListView x:Name="ListViewVideos" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideos_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" AllowDrop="True" PreviewMouseMove="ListViewVideos_PreviewMouseMove" Drop="ListViewVideos_Drop">
                 <ListView.View>
                     <GridView AllowsColumnReorder="false">
 
-                       <GridViewColumn Header="Thumbnail">
+                        <GridViewColumn Header="Thumbnail">
                             <GridViewColumn.HeaderContainerStyle>
                                 <Style TargetType="{x:Type FrameworkElement}">
                                     <Setter Property="IsHitTestVisible" Value="False"/>
@@ -74,8 +74,8 @@
                 </ListView.View>
             </ListView>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
-                <Button x:Name="AddAllToListButton" Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0" Click="AddAllToListButton_Click"/>
-                <Button x:Name="AddAllToQueueButton" Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0" Click="AddAllToQueueButton_Click"/>
+                <Button x:Name="AddAllToListButton" Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0" Click="AddAllToListButton_Click" Background="#FF383838" Foreground="White"/>
+                <Button x:Name="AddAllToQueueButton" Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0" Click="AddAllToQueueButton_Click" Background="#FF383838" Foreground="White"/>
             </StackPanel>
             <ListView x:Name="ListViewVideosQueue" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideosQueue_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Black" AllowDrop="True" PreviewMouseMove="ListViewVideosQueue_PreviewMouseMove" Drop="ListViewVideosQueue_Drop">
                 <ListView.View>
@@ -136,7 +136,7 @@
                                                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="2">
                                                     <Grid x:Name="PART_Track">
                                                         <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" Fill="{TemplateBinding Foreground}" />
-                                                        <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" />
+                                                        <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0:F2}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" />
                                                     </Grid>
                                                 </Border>
                                             </ControlTemplate>
@@ -148,10 +148,6 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Margin="5,10,5,0">
-            <Button x:Name="btnDownload" Content="Download" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Click="btnDownload_Click" Height="25" Width="107" Grid.Row="1"/>
-            <TextBlock x:Name="tb_FileSize" Margin="15,0,70,4" Grid.Row="1" Text="---"/>
         </StackPanel>
     </StackPanel>
 
