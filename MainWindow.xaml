@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YouTubeDownloaderGUI"
         mc:Ignorable="d"
-        Title="YouTubeDownloader by Highfish/Toni" Height="600" ResizeMode="CanMinimize" Width="850" Loaded="Window_Loaded" Background="#FF191919">
+        Title="YouTubeDownloader by Highfish/Toni" Height="600" ResizeMode="CanMinimize" Width="850" Loaded="Window_Loaded" Background="#FF191919" WindowStartupLocation="CenterScreen">
 
     <StackPanel HorizontalAlignment="Center" Width="750">
         <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"  Background="#FF383838" Foreground="White"/>
@@ -143,18 +143,21 @@
                             </GridViewColumn.HeaderContainerStyle>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ProgressBar Value="{Binding progress}" Width="150">
-                                        <ProgressBar.Template>
-                                            <ControlTemplate TargetType="{x:Type ProgressBar}">
-                                                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="2">
-                                                    <Grid x:Name="PART_Track">
-                                                        <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" Fill="{TemplateBinding Foreground}" />
-                                                        <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0:F2}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" />
-                                                    </Grid>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </ProgressBar.Template>
-                                    </ProgressBar>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding state}" Foreground="{Binding stateColor}" HorizontalAlignment="Center"/>
+                                        <ProgressBar Value="{Binding progress}" Width="150" Background="White">
+                                            <ProgressBar.Template>
+                                                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="2">
+                                                        <Grid x:Name="PART_Track">
+                                                            <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" Fill="{TemplateBinding Foreground}" />
+                                                            <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0:F2}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" />
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </ProgressBar.Template>
+                                        </ProgressBar>
+                                    </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

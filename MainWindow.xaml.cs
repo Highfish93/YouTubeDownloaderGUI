@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using YoutubeExplode;
 using YoutubeExplode.Common;
@@ -52,7 +53,8 @@ namespace YouTubeDownloaderGUI
             public string? Keywords { get; set; }
             public bool downloadChecked { get; set; } = true;
             public bool likeCheck { get; set; }
-
+            public string? state { get; set; }
+            public Brush stateColor { get; set; }
             public double progress { get; set; }
         }
 
@@ -88,54 +90,7 @@ namespace YouTubeDownloaderGUI
             file = file.Replace(" ","%20");
             return file;
         }
-        public static async void CreateVlcPlaylist(string path)
-        {
-            if (File.Exists(path+"00 - Wiedergabeliste.xspf"))
-            {
-                File.Delete(path + "00 - Wiedergabeliste.xspf");
-            }
-            string header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<playlist xmlns=\"http://xspf.org/ns/0/\" xmlns:vlc=\"http://www.videolan.org/vlc/playlist/ns/0/\" version=\"1\">\r\n";
-            await File.WriteAllTextAsync(path+"00 - Wiedergabeliste.xspf", header);
-            using StreamWriter textfile = new(path+"00 - Wiedergabeliste.xspf", append: true);
-            string nextPart = "\t<title>Wiedergabeliste</title>\r\n\t<trackList>";
-            await textfile.WriteLineAsync(nextPart);
-            List<string> videoFiles = new List<string>();
-            DirectoryInfo rootpath = new DirectoryInfo(path);
-            int counter = 0;
-            foreach (var file in rootpath.GetFiles("*.mp4", SearchOption.TopDirectoryOnly))
-            {
-                videoFiles.Add(Encode2URL(file.FullName));
-                using (var shell = ShellObject.FromParsingName(file.FullName))
-                {
-                    IShellProperty prop = shell.Properties.System.Media.Duration;
-                    var t = (ulong)prop.ValueAsObject;
-                    var dur = TimeSpan.FromTicks((long)t);
-                    var hours = dur.Hours* 3600000;
-                    var minutes = dur.Minutes* 60000;
-                    var seconds = dur.Seconds * 1000;
-                    var miliseconds = dur.Milliseconds;
-                    var videoduration = hours + minutes + seconds + miliseconds;
-                    //MessageBox.Show(videoduration.ToString());
-                    await textfile.WriteLineAsync("\t\t<track>\r\n\t\t\t<location>file:///" + Encode2URL(file.FullName).Replace(@"\", "/") + "</location>");
-                    await textfile.WriteLineAsync("\t\t\t<duration>" + videoduration.ToString()+"</duration>");
-                    await textfile.WriteLineAsync("\t\t\t<extension application=\"http://www.videolan.org/vlc/playlist/0\">");
-                    await textfile.WriteLineAsync("\t\t\t\t<vlc:id>" + counter.ToString() + "</vlc:id>");
-                    await textfile.WriteLineAsync("\t\t\t</extension>");
-                    await textfile.WriteLineAsync("\t\t</track>");
-                }
-                counter++;
-                    
-            }
-            await textfile.WriteLineAsync("\t</trackList>");
-            await textfile.WriteLineAsync("\t<extension application=\"http://www.videolan.org/vlc/playlist/0\">");
-            for (int i =0;i<=counter-1;i++)
-            {
-                await textfile.WriteLineAsync($"\t\t<vlc:item tid=\"{i}\"/>");
-            }
-            await textfile.WriteLineAsync("\t</extension>");
-            await textfile.WriteLineAsync("</playlist>");
-            
-        }
+       
         public static string ConvertBytes(float filesize)
         {
             List<string> filesizeStrings = new List<string> { "", "K", "M", "G", "T" };
@@ -166,9 +121,7 @@ namespace YouTubeDownloaderGUI
         }
 
 
-
-
-        private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        public async void GetUrlFromTextBox()
         {
             VideoInfos.Clear();
             ListViewVideos.ItemsSource = null;
@@ -176,24 +129,37 @@ namespace YouTubeDownloaderGUI
             if (tb_Link.Text.Contains("watch") | tb_Link.Text.Contains("shorts"))
             {
 
-                var video = await youtube.Videos.GetAsync(tb_Link.Text);
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.UriSource = new Uri(video.Thumbnails[0].Url);
-                bitmapImage.EndInit();
-
-                string keyW = "";
-                int index = 0;
-                foreach (var h in video.Keywords)
+                try
                 {
-                    if (index == video.Keywords.Count - 1)
-                        keyW += h;
-                    else
-                        keyW += h + ", ";
-                    index++;
-                }
+                    var video = await youtube.Videos.GetAsync(tb_Link.Text);
 
-                VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title,Thumbnail = bitmapImage, author = video.Author.ChannelTitle,Keywords=keyW, duration = video.Duration.Value.ToString() , uploadDate=video.UploadDate});
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(video.Thumbnails[0].Url);
+                    bitmapImage.EndInit();
+
+                    string keyW = "";
+                    int index = 0;
+                    foreach (var h in video.Keywords)
+                    {
+                        if (index == video.Keywords.Count - 1)
+                            keyW += h;
+                        else
+                            keyW += h + ", ";
+                        index++;
+                    }
+
+                    VideoInfos.Add(new VideoInfo { url = tb_Link.Text, title = video.Title, Thumbnail = bitmapImage, author = video.Author.ChannelTitle, Keywords = keyW, duration = video.Duration.Value.ToString(), uploadDate = video.UploadDate });
+                }
+                catch (System.Net.Http.HttpRequestException ex)
+                {
+                    var result = MessageBox.Show("No Connection 2 Seconds Retry after OK", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (result == MessageBoxResult.OK)
+                    {
+                        await Task.Delay(2000);
+                        GetUrlFromTextBox();
+                    }
+                }
             }
             else if (tb_Link.Text.Contains("playlist?list="))
             {
@@ -212,7 +178,7 @@ namespace YouTubeDownloaderGUI
 
                 var test = youtube.Search.GetVideosAsync(tb_Link.Text);
                 int index = 0;
-                await foreach(var i in test)
+                await foreach (var i in test)
                 {
                     if (index < 20)
                     {
@@ -222,60 +188,68 @@ namespace YouTubeDownloaderGUI
                             index++;
                         }
                         catch { }
-                        
+
                     }
                     else
                         break;
                 }
                 //video.UploadDate
-                
+
             }
             ListViewVideos.ItemsSource = VideoInfos;
         }
 
+        private async void tb_Link_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            GetUrlFromTextBox();
+        }
+
         public async Task DownloadVideo(bool playlist = false)
         {
-                YoutubeClient youtube = new YoutubeClient();
-                string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
-                var video = await youtube.Videos.GetAsync(VideoQueue[0].url);
+            YoutubeClient youtube = new YoutubeClient();
+            string outputPath = Directory.GetCurrentDirectory() + @"\Downloads\";
+            var video = await youtube.Videos.GetAsync(VideoQueue[0].url);
+            VideoQueue[0].state = "Downloading in Progress";
+            VideoQueue[0].stateColor = Brushes.Green;
+            ListViewVideosQueue.Items.Refresh();
 
-                string downloadPath;
+            string downloadPath;
 
 
-                if (playlist)
+            if (playlist)
+            {
+                var item = VideoInfos.FirstOrDefault(e => e.url == VideoQueue[0].url);
+                var index = VideoInfos.IndexOf(item) + 1;
+                outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\" + RemoveForbiddenChars(VideoInfos[index].playlistTitle) + "\\";
+                downloadPath = outputPath + index.ToString("D2") + " - " + RemoveForbiddenChars(video.Title) + ".mp4";
+                //"\\" + VideoInfos[index].playlistTitle + "\\" + index.ToString("D2") + " - " +
+            }
+            else
+            {
+                outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\";
+                downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
+            }
+            Directory.CreateDirectory(outputPath);
+
+            var progress = new Progress<double>(p =>
+            {
+                var newP = Math.Round((decimal)p * 100, 2);
+                if (VideoQueue.Count() > 0)
                 {
-                    var item = VideoInfos.FirstOrDefault(e => e.url == VideoQueue[0].url);
-                    var index = VideoInfos.IndexOf(item) + 1;
-                    outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\" + RemoveForbiddenChars(VideoInfos[index].playlistTitle) + "\\";
-                    downloadPath = outputPath + index.ToString("D2") + " - " + RemoveForbiddenChars(video.Title) + ".mp4";
-                    //"\\" + VideoInfos[index].playlistTitle + "\\" + index.ToString("D2") + " - " +
+                    VideoQueue[0].progress = Convert.ToDouble(newP);
+                    ListViewVideosQueue.Items.Refresh();
                 }
-                else
-                {
-                    outputPath += @$"{RemoveForbiddenChars(video.Author.ChannelTitle)}\";
-                    downloadPath = outputPath + RemoveForbiddenChars(video.Title) + ".mp4";
-                }
-                Directory.CreateDirectory(outputPath);
+            });
+            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(VideoQueue[0].url);
 
-                var progress = new Progress<double>(p =>
-                {
-                    var newP = Math.Round((decimal)p * 100, 2);
-                    if (VideoQueue.Count() > 0)
-                    {
-                        VideoQueue[0].progress = Convert.ToDouble(newP);
-                        ListViewVideosQueue.Items.Refresh();
-                    }
-                });
-                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(VideoQueue[0].url);
+            var audioStreamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-                var audioStreamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-                var streams = streamManifest.GetVideoOnlyStreams().Where(s => !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
-                var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
-                var tmp = streamInfos.First().Size.MegaBytes;
-                //tb_FileSize.Text = tmp.ToString();
-                await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
-                VideoQueue.Remove(VideoQueue[0]);
+            var streams = streamManifest.GetVideoOnlyStreams().Where(s => !(s.VideoQuality.Label.Contains("2160") | s.VideoQuality.Label.Contains("1440")));
+            var streamInfos = new IStreamInfo[] { audioStreamInfo, streams.First() };
+            var tmp = streamInfos.First().Size.MegaBytes;
+            //tb_FileSize.Text = tmp.ToString();
+            await youtube.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(downloadPath).Build(), progress);
+            VideoQueue.Remove(VideoQueue[0]);
         }
 
             
@@ -364,7 +338,17 @@ namespace YouTubeDownloaderGUI
 
                 if (VideoQueue.Count >= 1)
                 {
-                    await DownloadVideo();
+                    try
+                    {
+                        
+                        await DownloadVideo();
+                    }
+                    catch (Exception ex)
+                    {
+                        VideoQueue[0].state = "ERROR -> Retry";
+                        VideoQueue[0].stateColor = Brushes.Red;
+                        ListViewVideosQueue.Items.Refresh();
+                    }
                     //ListViewVideosQueue.Items.Refresh();
                 }
                 await Task.Delay(100);
