@@ -57,57 +57,6 @@ namespace YouTubeDownloaderGUI
             public Brush stateColor { get; set; }
             public double progress { get; set; }
         }
-
-        public static string Encode2URL(string file)
-        {
-            file = file.Replace("%", "%25");
-            file = file.Replace("Ä", "%C3%84");
-            file = file.Replace("Ö", "%C3%96");
-            file = file.Replace("Ü", "%C§%9C");
-            file = file.Replace("ß", "%C3%9F");
-            file = file.Replace("ä", "%C3%A4");
-            file = file.Replace("ö", "%C3%B6");
-            file = file.Replace("ü", "%C3%BC");
-            file = file.Replace("!", "%21");
-            file = file.Replace("#", "%23");
-            file = file.Replace("$","%24");
-            file = file.Replace("&", "%26");
-            file = file.Replace("'", "%27");
-            file = file.Replace("(", "%28");
-            file = file.Replace(")", "%29");
-            file = file.Replace("*", "%2A");
-            file = file.Replace("+", "%2B");
-            file = file.Replace(",", "%2C");
-            //file = file.Replace(".", "%2E");
-            file = file.Replace("/", "%2F");
-            //file = file.Replace(":", "%3A");
-            file = file.Replace(";", "%3B");
-            file = file.Replace("=", "%3D");
-            file = file.Replace("?", "%3F");
-            file = file.Replace("@", "%40");
-            file = file.Replace("[", "%5B");
-            file = file.Replace("]", "5D");
-            file = file.Replace(" ","%20");
-            return file;
-        }
-       
-        public static string ConvertBytes(float filesize)
-        {
-            List<string> filesizeStrings = new List<string> { "", "K", "M", "G", "T" };
-            foreach (string c in filesizeStrings)
-            {
-                if (filesize < 1024)
-                {
-                    return $"{Math.Round(filesize, 2)}{c}B";
-                }
-                filesize = filesize / 1024;
-            }
-            return $"{Math.Round(filesize, 2)}EB";
-        }
-        public static void ResetUI()
-        {
-
-        }
         public static string RemoveForbiddenChars(string text)
         {
             List<string> forbidden = new List<string> { @"~", @"\", "#", "%", "&", "*", ":", "<", ">", "?", "/", @"\", @"\", "{", "|", "}", "\"" };
@@ -302,23 +251,6 @@ namespace YouTubeDownloaderGUI
                     VideoQueue.Add(item);
                     VideoInfos.Remove(item);
                 }
-            }
-        }
-
-        public class IsIndeterminateConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            {
-                if (value == null)
-                {
-                    return true;
-                }
-                return false;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            {
-                throw new NotImplementedException();
             }
         }
 
