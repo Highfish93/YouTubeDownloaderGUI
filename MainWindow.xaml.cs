@@ -261,6 +261,7 @@ namespace YouTubeDownloaderGUI
             string ClipBoard = "-";
             while (true)
             {
+                int failureCount = 0;
                 if (ClipBoard != Clipboard.GetText())
                 {
                     ClipBoard = Clipboard.GetText();
@@ -272,14 +273,22 @@ namespace YouTubeDownloaderGUI
                 {
                     try
                     {
-                        
                         await DownloadVideo();
                     }
                     catch (Exception ex)
                     {
-                        VideoQueue[0].state = "ERROR -> Retry";
-                        VideoQueue[0].stateColor = Brushes.Red;
-                        ListViewVideosQueue.Items.Refresh();
+                        failureCount = failureCount + 1;
+                        if (failureCount < 10)
+                        {
+                            VideoQueue[0].state = "ERROR -> Retry";
+                            VideoQueue[0].stateColor = Brushes.Red;
+                            ListViewVideosQueue.Items.Refresh();
+                        }
+                        else
+                        {
+                            VideoQueue.Remove(VideoQueue[0]);
+                            failureCount = 0;
+                        }
                     }
                     //ListViewVideosQueue.Items.Refresh();
                 }
