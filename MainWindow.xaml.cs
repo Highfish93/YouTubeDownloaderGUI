@@ -1,30 +1,16 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Util;
-using Google.Apis.Util.Store;
-using Google.Apis.YouTube.v3;
-using Google.Apis.YouTube.v3.Data;
-using Microsoft.WindowsAPICodePack.Shell;
-using Microsoft.WindowsAPICodePack.Shell.PropertySystem;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Videos.Streams;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YouTubeDownloaderGUI
 {
@@ -259,9 +245,9 @@ namespace YouTubeDownloaderGUI
             ListViewVideos.ItemsSource = VideoInfos;
             ListViewVideosQueue.ItemsSource = VideoQueue;
             string ClipBoard = "-";
+            int failureCount = 0;
             while (true)
             {
-                int failureCount = 0;
                 if (ClipBoard != Clipboard.GetText())
                 {
                     ClipBoard = Clipboard.GetText();
