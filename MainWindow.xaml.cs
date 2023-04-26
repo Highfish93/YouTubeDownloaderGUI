@@ -264,14 +264,15 @@ namespace YouTubeDownloaderGUI
                     catch (Exception ex)
                     {
                         failureCount = failureCount + 1;
-                        if (failureCount < 10)
+                        if (failureCount < 100)
                         {
-                            VideoQueue[0].state = "ERROR -> Retry";
+                            VideoQueue[0].state = "ERROR -> Retry (" + failureCount + "/100)";
                             VideoQueue[0].stateColor = Brushes.Red;
                             ListViewVideosQueue.Items.Refresh();
                         }
                         else
                         {
+                            VideoInfos.Add(VideoQueue[0]);
                             VideoQueue.Remove(VideoQueue[0]);
                             failureCount = 0;
                         }

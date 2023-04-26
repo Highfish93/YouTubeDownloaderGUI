@@ -9,9 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.2945" />
+    <PackageReference Include="MaterialDesignColors" Version="2.1.2" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.8.0" />
     <PackageReference Include="Microsoft.WindowsAPICodePack-Shell" Version="1.1.0" />
-    <PackageReference Include="YoutubeExplode" Version="6.2.9" />
-    <PackageReference Include="YoutubeExplode.Converter" Version="6.2.9" />
+    <PackageReference Include="YoutubeExplode" Version="6.2.12" />
+    <PackageReference Include="YoutubeExplode.Converter" Version="6.2.12" />
   </ItemGroup>
 
 </Project>

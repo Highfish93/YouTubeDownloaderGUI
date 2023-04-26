@@ -3,33 +3,47 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:YouTubeDownloaderGUI"
         mc:Ignorable="d"
-        Title="YouTubeDownloader by Highfish/Toni" Height="600" ResizeMode="CanMinimize" Width="850" Loaded="Window_Loaded" Background="#FF191919" WindowStartupLocation="CenterScreen">
+        Title="YouTubeDownloader by Highfish/Toni" Height="600" ResizeMode="CanMinimize" Width="850" Loaded="Window_Loaded" Background="#FF2C4C54" WindowStartupLocation="CenterScreen">
 
     <StackPanel HorizontalAlignment="Center" Width="750">
-        <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"  Background="#FF383838" Foreground="White"/>
+
+        <TextBox Name="tb_Link" Margin="10,10,10,10" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="tb_Link_TextChanged" FontSize="15"  Background="#FF383838" Foreground="Black"/>
         <StackPanel Orientation="Vertical" Margin="10,0,10,0" Height="450">
+
             <ListView x:Name="ListViewVideos" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideos_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" AllowDrop="True" PreviewMouseMove="ListViewVideos_PreviewMouseMove" Drop="ListViewVideos_Drop">
                 <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                            </Trigger>
-                        </Style.Triggers>
-                        <Setter Property="Background" Value="Transparent"/>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <Grid Background="{TemplateBinding Background}">
+                                        <Border Name="Selection" Visibility="Visible" />
+                                        <!-- This is used when GridView is put inside the ListView -->
+                                        <GridViewRowPresenter Grid.RowSpan="2"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
-
                 <ListView.View>
                     <GridView AllowsColumnReorder="false">
                         <GridViewColumn Header="Thumbnail">
                             <GridViewColumn.HeaderContainerStyle>
                                 <Style TargetType="{x:Type FrameworkElement}">
                                     <Setter Property="IsHitTestVisible" Value="False"/>
-                                    
+
                                 </Style>
                             </GridViewColumn.HeaderContainerStyle>
                             <GridViewColumn.CellTemplate>
@@ -59,9 +73,9 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="Auto" FontSize="18" TextAlignment="Center" Foreground="White"/>
+                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="Auto" FontSize="18" TextAlignment="Center" Foreground="DarkOrange"/>
                                         <Border BorderThickness="3" Width="auto" Height="7" Background="#FF27C7DC" CornerRadius="55" />
-                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto" FontSize="15" FontWeight="Light" Foreground="White"/>
+                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto" FontSize="15" FontWeight="Light" Foreground="DarkOrange"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -76,8 +90,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Vertical">
-                                        <CheckBox Content="Download" HorizontalAlignment="Left" IsChecked="{Binding downloadChecked}" FontSize="15" VerticalContentAlignment="Center" Foreground="White"/>
-                                        <CheckBox Content="Like" HorizontalAlignment="Left" IsChecked="{Binding likeCheck}" FontSize="15" VerticalContentAlignment="Center" Foreground="White"/>
+                                        <CheckBox Content="Download" HorizontalAlignment="Left" IsChecked="{Binding downloadChecked}" FontSize="15" VerticalContentAlignment="Center" Foreground="DarkOrange"/>
+                                        <CheckBox Content="Like" HorizontalAlignment="Left" IsChecked="{Binding likeCheck}" FontSize="15" VerticalContentAlignment="Center" Foreground="DarkOrange"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -85,11 +99,12 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,5">
-                <Button x:Name="AddAllToListButton" Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0" Click="AddAllToListButton_Click" Background="#FF383838" Foreground="White"/>
-                <Button x:Name="AddAllToQueueButton" Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0" Click="AddAllToQueueButton_Click" Background="#FF383838" Foreground="White"/>
+                <Button x:Name="AddAllToListButton" Content="↑↑" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="0,0,5,0" Click="AddAllToListButton_Click" Background="#FF383838" Foreground="DarkOrange"/>
+                <Button x:Name="AddAllToQueueButton" Content="↓↓" HorizontalAlignment="Center" FontSize="25" Width="35" Height="35" Margin="5,0,0,0" Click="AddAllToQueueButton_Click" Background="#FF383838" Foreground="DarkOrange"/>
             </StackPanel>
+
             <ListView x:Name="ListViewVideosQueue" Width="730" Height="200" FontSize="12" Background="#00000000" SelectionChanged="ListViewVideosQueue_SelectionChanged" IsSynchronizedWithCurrentItem="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" AllowDrop="True" PreviewMouseMove="ListViewVideosQueue_PreviewMouseMove" Drop="ListViewVideosQueue_Drop">
                 <ListView.View>
                     <GridView AllowsColumnReorder="false">
@@ -111,7 +126,7 @@
                                             <Image Source="{Binding Thumbnail}" Width="160" Stretch="Uniform"/>
                                         </StackPanel>
                                         <Border CornerRadius="5" Background="#BF000000" Margin="0,0,6,2" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                                            <TextBlock Text="{Binding duration}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="Black"/>
+                                            <TextBlock Text="{Binding duration}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="White"/>
                                         </Border>
                                     </Grid>
                                 </DataTemplate>
@@ -127,9 +142,9 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="Auto" FontSize="18" TextAlignment="Center" Foreground="White"/>
-                                        <Border BorderThickness="3" Width="auto" Height="7" Background="#FF27C7DC" CornerRadius="55"/> 
-                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto" FontSize="15" FontWeight="Light" Foreground="White"/>
+                                        <TextBlock Text="{Binding title}" TextWrapping="Wrap" Width="Auto" FontSize="18" TextAlignment="Center" Foreground="DarkOrange"/>
+                                        <Border BorderThickness="3" Width="auto" Height="7" Background="#FF27C7DC" CornerRadius="55"/>
+                                        <TextBlock Text="{Binding author}" TextAlignment="Center" Width="auto" FontSize="15" FontWeight="Light" Foreground="DarkOrange"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -151,7 +166,7 @@
                                                     <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="2">
                                                         <Grid x:Name="PART_Track">
                                                             <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" Fill="{TemplateBinding Foreground}" />
-                                                            <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0:F2}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Black" />
+                                                            <TextBlock x:Name="PART_TextBlock" Text="{Binding progress, StringFormat={}{0:F2}%}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="DarkOrange" />
                                                         </Grid>
                                                     </Border>
                                                 </ControlTemplate>
