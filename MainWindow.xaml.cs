@@ -103,7 +103,11 @@ namespace YouTubeDownloaderGUI
                 {
                     foreach (var video in batch.Items)
                     {
-                        VideoInfos.Add(new VideoInfo { url = video.Url, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h", playlistTitle = pl.Title });
+                        BitmapImage bitmapImage = new BitmapImage();
+                        bitmapImage.BeginInit();
+                        bitmapImage.UriSource = new Uri(video.Thumbnails[0].Url);
+                        bitmapImage.EndInit();
+                        VideoInfos.Add(new VideoInfo { url = video.Url, title = video.Title, author = video.Author.ChannelTitle, duration = video.Duration.Value.ToString() + "h", playlistTitle = pl.Title, Thumbnail = bitmapImage });
                     }
                 }
 
